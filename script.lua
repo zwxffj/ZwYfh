@@ -12,25 +12,27 @@ local AccentColor = Color3.fromRGB(25, 25, 25)
 local TextColor = Color3.fromRGB(255, 255, 255)
 local RedSupreme = Color3.fromRGB(255, 0, 0)
 
--- Tabela para controlar quais funções estão ativas
 local Toggles = {}
 
--- Função de animação de clique e Hover
-local function AddButtonEffects(button, isClose)
+-- FUNÇÃO DE CLIQUE APENAS PARA BOTÕES DO MENU (AFUNDAR)
+local function AddMenuButtonEffects(button, isClose)
     local originalColor = button.BackgroundColor3
-    
+    local originalSize = button.Size
+
     button.MouseButton1Down:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {Size = UDim2.new(button.Size.X.Scale * 0.95, 0, button.Size.Y.Scale * 0.95, 0)}):Play()
+        button:TweenSize(UDim2.new(originalSize.X.Scale, originalSize.X.Offset - 5, originalSize.Y.Scale, originalSize.Y.Offset - 5), "Out", "Quad", 0.1, true)
     end)
+    
     button.MouseButton1Up:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {Size = UDim2.new(button.Size.X.Scale / 0.95, 0, button.Size.Y.Scale / 0.95, 0)}):Play()
+        button:TweenSize(originalSize, "Out", "Quad", 0.1, true)
     end)
     
     button.MouseEnter:Connect(function()
         if not Toggles[button.Name] then
-            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
         end
     end)
+    
     button.MouseLeave:Connect(function()
         if not Toggles[button.Name] then
             TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
@@ -38,7 +40,7 @@ local function AddButtonEffects(button, isClose)
     end)
 end
 
--- BOTÃO ABRIR
+-- BOTÃO ABRIR (SEM AFUNDAR - APENAS HOVER E ARRASTE)
 local OpenBtn = Instance.new("TextButton")
 OpenBtn.Parent = ScreenGui
 OpenBtn.Size = UDim2.new(0, 120, 0, 45)
@@ -59,7 +61,6 @@ local OpenStroke = Instance.new("UIStroke")
 OpenStroke.Color = RedSupreme
 OpenStroke.Thickness = 2
 OpenStroke.Parent = OpenBtn
-AddButtonEffects(OpenBtn, false)
 
 -- FRAME PRINCIPAL
 local MainFrame = Instance.new("Frame")
@@ -71,17 +72,6 @@ MainFrame.Size = UDim2.new(0, 0, 0, 0)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
-
-local Shadow = Instance.new("ImageLabel")
-Shadow.Parent = MainFrame
-Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-Shadow.Size = UDim2.new(1, 40, 1, 40)
-Shadow.BackgroundTransparency = 1
-Shadow.Image = "rbxassetid://6014264795"
-Shadow.ImageColor3 = Color3.new(0, 0, 0)
-Shadow.ImageTransparency = 0.5
-Shadow.ZIndex = 0
 
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 15)
@@ -152,17 +142,24 @@ local function AnimateMenu(show)
     end
 end
 
+-- Detecção de clique no botão abrir
+local dragPos = nil
+OpenBtn.MouseButton1Down:Connect(function() dragPos = OpenBtn.AbsolutePosition end)
 OpenBtn.MouseButton1Up:Connect(function()
-    OpenBtn.Visible = false
-    AnimateMenu(true)
+    if dragPos then
+        local mag = (OpenBtn.AbsolutePosition - dragPos).Magnitude
+        if mag < 10 then
+            OpenBtn.Visible = false
+            AnimateMenu(true)
+        end
+    end
 end)
 
--- FUNÇÃO PARA CRIAR BOTÃO COM LOOP
 local function CreateBtn(text, argValue, isClose)
     local btn = Instance.new("TextButton")
     btn.Name = text
     btn.Parent = ButtonHolder
-    btn.Size = UDim2.new(0.85, 0, 0, 45)
+    btn.Size = UDim2.new(0, 350, 0, 45)
     btn.Text = text
     btn.BackgroundColor3 = isClose and Color3.fromRGB(150, 0, 0) or AccentColor
     btn.TextColor3 = TextColor
@@ -174,29 +171,24 @@ local function CreateBtn(text, argValue, isClose)
     btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = btn
 
-    AddButtonEffects(btn, isClose)
+    AddMenuButtonEffects(btn, isClose)
 
     btn.MouseButton1Click:Connect(function()
         if isClose then
             AnimateMenu(false)
         else
-            Toggles[text] = not Toggles[text] -- Inverte o estado (On/Off)
-            
+            Toggles[text] = not Toggles[text]
             if Toggles[text] then
-                -- Ativou
-                TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(180, 0, 0)}):Play()
-                
-                -- Inicia o Loop em uma nova thread
+                TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(200, 0, 0)}):Play()
                 task.spawn(function()
                     while Toggles[text] do
                         pcall(function()
                             game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.7.0").knit.Services.SeasonService.RF.RequestRankedReward:InvokeServer(argValue)
                         end)
-                        task.wait(0.5) -- Tempo entre cada repetição (ajustável)
+                        task.wait(0.5)
                     end
                 end)
             else
-                -- Desativou
                 TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = AccentColor}):Play()
             end
         end
