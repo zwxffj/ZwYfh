@@ -18,7 +18,7 @@ ClickSound.SoundId = "rbxassetid://12222216"
 ClickSound.Volume = 1
 ClickSound.Parent = SoundService
 
--- 🟢 BOTÃO FLUTUANTE (AGORA ARRASTÁVEL)
+-- 🟢 BOTÃO FLUTUANTE
 local OpenBtn = Instance.new("TextButton")
 OpenBtn.Parent = ScreenGui
 OpenBtn.Size = UDim2.new(0, 120, 0, 40)
@@ -30,10 +30,9 @@ OpenBtn.Font = Enum.Font.SourceSansBold
 OpenBtn.Visible = false
 OpenBtn.Active = true
 OpenBtn.Draggable = true
-
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 8)
 
--- 🔳 FRAME PRINCIPAL
+-- 🔳 FRAME
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = MainColor
@@ -41,57 +40,46 @@ MainFrame.Position = UDim2.new(0.5, -200, 0.5, -180)
 MainFrame.Size = UDim2.new(0, 400, 0, 360)
 MainFrame.Active = true
 MainFrame.Draggable = true
-
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
--- 🔴 GLOW FUNDO
+-- 🔴 GLOW
 local RedGlow = Instance.new("Frame")
 RedGlow.Parent = MainFrame
 RedGlow.Size = UDim2.new(1, 0, 1, 0)
 RedGlow.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 RedGlow.BackgroundTransparency = 0.9
-RedGlow.ZIndex = 0
 
-local GlowGradient = Instance.new("UIGradient", RedGlow)
-GlowGradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
-}
-GlowGradient.Rotation = 90
-
--- 🔥 BORDA NEON
+-- 🔥 BORDA NEON REAL (ANIMADA)
 local Stroke = Instance.new("UIStroke")
 Stroke.Parent = MainFrame
-Stroke.Color = Color3.fromRGB(255, 0, 0)
 Stroke.Thickness = 2
 
-local StrokeGradient = Instance.new("UIGradient")
-StrokeGradient.Parent = Stroke
-StrokeGradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
-	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,100,100)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,0))
-}
-
--- animação neon
 task.spawn(function()
-	local offset = 0
-	while task.wait(0.02) do
-		offset += 0.02
-		StrokeGradient.Offset = Vector2.new(offset,0)
+	while task.wait(0.03) do
+		local glow = (math.sin(tick()*3)+1)/2
+		Stroke.Color = Color3.fromRGB(255, glow*120, glow*120)
 	end
 end)
 
--- 🖼️ LOGO
+-- 🖼️ LOGO (COM FALLBACK)
 local Logo = Instance.new("ImageLabel")
 Logo.Parent = MainFrame
 Logo.Size = UDim2.new(0, 180, 0, 100)
 Logo.Position = UDim2.new(0.5, -90, 0, 5)
 Logo.BackgroundTransparency = 1
-Logo.Image = "rbxassetid://SEU_ID_AQUI"
 
+-- tenta sua imagem
+Logo.Image = "rbxassetid://101664983542573"
+
+-- fallback automático se não carregar
+task.delay(3, function()
+	if Logo.IsLoaded == false then
+		Logo.Image = "rbxassetid://7072719338"
+	end
+end)
+
+-- animação logo
 local LogoScale = Instance.new("UIScale", Logo)
-
 task.spawn(function()
 	while task.wait(0.02) do
 		LogoScale.Scale = 1 + (math.sin(tick()*2)*0.03)
@@ -147,7 +135,6 @@ local function CreateBtn(text, argValue, isClose)
 	
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
-	-- hover
 	local normal = btn.BackgroundColor3
 	local hover = Color3.fromRGB(60,60,60)
 
