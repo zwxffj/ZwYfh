@@ -10,7 +10,7 @@ local MainColor = Color3.fromRGB(15, 15, 15)
 local AccentColor = Color3.fromRGB(35, 35, 35)
 local TextColor = Color3.fromRGB(255, 255, 255)
 
--- Botão para Reabrir o Menu (FLUTUANTE E ARRASTÁVEL)
+-- BOTÃO ABRIR (FLUTUANTE)
 local OpenBtn = Instance.new("TextButton")
 OpenBtn.Parent = ScreenGui
 OpenBtn.Size = UDim2.new(0, 100, 0, 40)
@@ -21,55 +21,61 @@ OpenBtn.TextColor3 = TextColor
 OpenBtn.Font = Enum.Font.SourceSansBold
 OpenBtn.Visible = false
 OpenBtn.Active = true
-OpenBtn.Draggable = true -- Agora você pode mover o botão
+OpenBtn.Draggable = true 
 
 local OpenCorner = Instance.new("UICorner")
 OpenCorner.CornerRadius = UDim.new(0, 8)
 OpenCorner.Parent = OpenBtn
 
--- Frame Principal
+-- Borda Vermelha para o Botão Abrir (Opcional, para combinar)
+local OpenStroke = Instance.new("UIStroke")
+OpenStroke.Color = Color3.fromRGB(255, 0, 0)
+OpenStroke.Thickness = 1.5
+OpenStroke.Parent = OpenBtn
+
+-- FRAME PRINCIPAL
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = MainColor
 MainFrame.Position = UDim2.new(0.5, -200, 0.5, -160) 
-MainFrame.Size = UDim2.new(0, 400, 0, 350)
+MainFrame.Size = UDim2.new(0, 400, 0, 360)
 MainFrame.ClipsDescendants = false
 MainFrame.Active = true
 MainFrame.Draggable = true
 
--- BORDA ANIMADA VERMELHA
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = MainFrame
+
+-- BORDA ANIMADA VERMELHA (Glow Effect)
 local UIStroke = Instance.new("UIStroke")
-UIStroke.Thickness = 2.5
+UIStroke.Thickness = 3
 UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 UIStroke.Parent = MainFrame
 
 local UIGradientStroke = Instance.new("UIGradient")
 UIGradientStroke.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(50, 0, 0)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(80, 0, 0)),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
 })
 UIGradientStroke.Parent = UIStroke
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
-MainCorner.Parent = MainFrame
-
--- IMAGEM NO TOPO (ID Fornecido)
+-- IMAGEM NO TOPO (ID DE TEXTURA CORRIGIDO)
 local TopImage = Instance.new("ImageLabel")
 TopImage.Parent = MainFrame
 TopImage.BackgroundTransparency = 1
-TopImage.Position = UDim2.new(0.5, -40, 0, -50) -- Fica um pouco acima do menu
-TopImage.Size = UDim2.new(0, 80, 0, 80)
-TopImage.Image = "rbxassetid://101664983542573"
-TopImage.ZIndex = 2
+TopImage.Position = UDim2.new(0.5, -45, 0, -65) 
+TopImage.Size = UDim2.new(0, 90, 0, 90)
+TopImage.Image = "rbxassetid://80401758474460"
+TopImage.ZIndex = 5
 
--- Título
+-- TÍTULO
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 60)
-Title.Position = UDim2.new(0, 0, 0, 20)
+Title.Position = UDim2.new(0, 0, 0, 35)
 Title.Text = "SUPREME STORE"
 Title.TextColor3 = Color3.new(1, 1, 1)
 Title.Font = Enum.Font.SourceSansBold
@@ -84,42 +90,45 @@ TitleGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(1, Color3.new(0, 0, 0))
 })
 
--- ANIMAÇÕES (Borda, Título e Imagem)
+-- LOOP DE ANIMAÇÕES
 task.spawn(function()
     local rot = 0
     local offset = -1
     while task.wait(0.01) do
-        -- Rotação da Borda
-        rot = rot + 2
+        -- Rotação da borda
+        rot = rot + 2.5
         UIGradientStroke.Rotation = rot
         
-        -- Brilho do Título
+        -- Brilho do título
         offset = offset + 0.03
         if offset > 1 then offset = -1 end
         TitleGradient.Offset = Vector2.new(offset, 0)
-        Title.TextSize = 28 + (math.sin(tick() * 3) * 2)
+        Title.TextSize = 28 + (math.sin(tick() * 3) * 1.5)
         
-        -- Animação da Imagem (Levitação)
-        TopImage.Position = UDim2.new(0.5, -40, 0, -50 + (math.sin(tick() * 2) * 10))
+        -- Animação da Imagem (Flutuando e Balançando)
+        local wave = math.sin(tick() * 2.5)
+        TopImage.Position = UDim2.new(0.5, -45, 0, -65 + (wave * 10))
+        TopImage.Rotation = wave * 8
+        TopImage.ImageTransparency = 0.1 + (math.abs(wave) * 0.2) -- Efeito de pulso na opacidade
     end
 end)
 
 local ButtonHolder = Instance.new("Frame")
 ButtonHolder.Parent = MainFrame
 ButtonHolder.BackgroundTransparency = 1
-ButtonHolder.Position = UDim2.new(0, 0, 0, 90)
-ButtonHolder.Size = UDim2.new(1, 0, 1, -100)
+ButtonHolder.Position = UDim2.new(0, 0, 0, 110)
+ButtonHolder.Size = UDim2.new(1, 0, 1, -120)
 
 local Layout = Instance.new("UIListLayout")
 Layout.Parent = ButtonHolder
-Layout.Padding = UDim.new(0, 10)
+Layout.Padding = UDim.new(0, 12)
 Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- Lógica de Abrir/Fechar
+-- LÓGICA DE ABRIR/FECHAR (Anti-Drag Trigger)
 local function AnimateMenu(show)
 	if show then
 		MainFrame.Visible = true
-		MainFrame:TweenSize(UDim2.new(0, 400, 0, 350), "Out", "Quart", 0.5, true)
+		MainFrame:TweenSize(UDim2.new(0, 400, 0, 360), "Out", "Back", 0.5, true)
 	else
 		MainFrame:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Quart", 0.5, true, function()
 			MainFrame.Visible = false
@@ -128,29 +137,35 @@ local function AnimateMenu(show)
 	end
 end
 
--- Filtro para evitar abrir ao arrastar
-local dragStart = 0
-OpenBtn.MouseButton1Down:Connect(function() dragStart = tick() end)
+local dragStartPos = nil
+OpenBtn.MouseButton1Down:Connect(function()
+    dragStartPos = OpenBtn.Position
+end)
 
 OpenBtn.MouseButton1Up:Connect(function()
-    if tick() - dragStart < 0.3 then -- Só abre se for um clique rápido
-        OpenBtn.Visible = false
-        AnimateMenu(true)
+    if dragStartPos then
+        local dist = (Vector2.new(OpenBtn.Position.X.Offset, OpenBtn.Position.Y.Offset) - Vector2.new(dragStartPos.X.Offset, dragStartPos.Y.Offset)).Magnitude
+        if dist < 5 then -- Se moveu menos de 5 pixels, é um clique
+            OpenBtn.Visible = false
+            AnimateMenu(true)
+        end
     end
 end)
 
+-- CRIAÇÃO DOS BOTÕES
 local function CreateBtn(text, argValue, isClose)
 	local btn = Instance.new("TextButton")
 	btn.Parent = ButtonHolder
-	btn.Size = UDim2.new(0.9, 0, 0, 45)
+	btn.Size = UDim2.new(0.85, 0, 0, 45)
 	btn.Text = text
 	btn.BackgroundColor3 = isClose and Color3.fromRGB(180, 0, 0) or AccentColor
 	btn.TextColor3 = TextColor
-	btn.Font = Enum.Font.SourceSansSemibold
+	btn.Font = Enum.Font.SourceSansBold
 	btn.TextSize = 18
+	btn.AutoButtonColor = true
 	
 	local btnCorner = Instance.new("UICorner")
-	btnCorner.CornerRadius = UDim.new(0, 6)
+	btnCorner.CornerRadius = UDim.new(0, 8)
 	btnCorner.Parent = btn
 
 	btn.MouseButton1Click:Connect(function()
