@@ -7,19 +7,19 @@ ScreenGui.Name = "SupremeStore"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
-local MainColor = Color3.fromRGB(12, 12, 12)
-local AccentColor = Color3.fromRGB(25, 25, 25)
+-- Cores Ajustadas para Contraste Máximo
+local MainColor = Color3.fromRGB(0, 0, 0) -- Preto Total para destacar o nome
+local AccentColor = Color3.fromRGB(20, 20, 20)
 local TextColor = Color3.fromRGB(255, 255, 255)
 local RedSupreme = Color3.fromRGB(255, 0, 0)
 
 local Toggles = {}
 
--- EFEITOS DE HOVER (APENAS COR)
 local function AddHoverEffect(button, isClose)
     local originalColor = button.BackgroundColor3
     button.MouseEnter:Connect(function()
         if not Toggles[button.Name] then
-            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
         end
     end)
     button.MouseLeave:Connect(function()
@@ -34,7 +34,7 @@ local OpenBtn = Instance.new("TextButton")
 OpenBtn.Parent = ScreenGui
 OpenBtn.Size = UDim2.new(0, 120, 0, 45)
 OpenBtn.Position = UDim2.new(0.02, 0, 0.85, 0)
-OpenBtn.BackgroundColor3 = MainColor
+OpenBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 OpenBtn.Text = "ABRIR MENU"
 OpenBtn.TextColor3 = TextColor
 OpenBtn.Font = Enum.Font.SourceSansBold
@@ -51,7 +51,7 @@ OpenStroke.Color = RedSupreme
 OpenStroke.Thickness = 2
 OpenStroke.Parent = OpenBtn
 
--- FRAME PRINCIPAL
+-- FRAME PRINCIPAL (PRETO FORTE)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
@@ -66,7 +66,7 @@ local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 15)
 MainCorner.Parent = MainFrame
 
--- TÍTULO
+-- TÍTULO (PRETO E BRANCO - VELOCIDADE AUMENTADA)
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 80)
@@ -80,31 +80,35 @@ Title.BackgroundTransparency = 1
 local TitleGradient = Instance.new("UIGradient")
 TitleGradient.Parent = Title
 TitleGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, RedSupreme),
-    ColorSequenceKeypoint.new(0.5, Color3.new(1, 1, 1)),
-    ColorSequenceKeypoint.new(1, RedSupreme)
+    ColorSequenceKeypoint.new(0, Color3.new(0, 0, 0)),     -- Preto
+    ColorSequenceKeypoint.new(0.5, Color3.new(1, 1, 1)),   -- Branco
+    ColorSequenceKeypoint.new(1, Color3.new(0, 0, 0))      -- Preto
 })
 
--- STATUS NO RODAPÉ
+-- STATUS
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Parent = MainFrame
 StatusLabel.Size = UDim2.new(1, 0, 0, 30)
 StatusLabel.Position = UDim2.new(0, 0, 1, -35)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Text = "STATUS: ATIVO •"
-StatusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+StatusLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
 StatusLabel.Font = Enum.Font.SourceSansSemibold
 StatusLabel.TextSize = 14
 
+-- ANIMAÇÃO SUAVE E RÁPIDA
 task.spawn(function()
     local offset = -1
     while task.wait(0.01) do
-        offset = offset + 0.012
+        -- Velocidade ajustada para ser rápida mas suave
+        offset = offset + 0.025 
         if offset > 1 then offset = -1 end
         TitleGradient.Offset = Vector2.new(offset, 0)
-        Title.TextSize = 45 + (math.sin(tick() * 2) * 1.5)
+        
+        Title.TextSize = 45 + (math.sin(tick() * 4) * 2)
+        
         local pulse = math.abs(math.sin(tick() * 3))
-        StatusLabel.TextColor3 = Color3.fromRGB(100 + (pulse * 50), 100 + (pulse * 155), 100 + (pulse * 50))
+        StatusLabel.TextColor3 = Color3.fromRGB(80 + (pulse * 40), 80 + (pulse * 175), 80 + (pulse * 40))
     end
 end)
 
@@ -131,7 +135,6 @@ local function AnimateMenu(show)
     end
 end
 
--- Clique no botão abrir (com filtro de arraste)
 local dragPos = nil
 OpenBtn.MouseButton1Down:Connect(function() dragPos = OpenBtn.AbsolutePosition end)
 OpenBtn.MouseButton1Up:Connect(function()
@@ -154,7 +157,7 @@ local function CreateBtn(text, argValue, isClose)
     btn.TextColor3 = TextColor
     btn.Font = Enum.Font.SourceSansBold
     btn.TextSize = 18
-    btn.AutoButtonColor = true -- Reativado o padrão do Roblox já que não há animação de afundar
+    btn.AutoButtonColor = true 
     
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 8)
@@ -166,10 +169,9 @@ local function CreateBtn(text, argValue, isClose)
         if isClose then
             AnimateMenu(false)
         else
-            -- Lógica de Toggle apenas para funções
             Toggles[text] = not Toggles[text]
             if Toggles[text] then
-                TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(200, 0, 0)}):Play()
+                TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = RedSupreme}):Play()
                 task.spawn(function()
                     while Toggles[text] do
                         pcall(function()
