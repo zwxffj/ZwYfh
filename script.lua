@@ -14,25 +14,14 @@ local RedSupreme = Color3.fromRGB(255, 0, 0)
 
 local Toggles = {}
 
--- FUNÇÃO DE CLIQUE APENAS PARA BOTÕES DO MENU (AFUNDAR)
-local function AddMenuButtonEffects(button, isClose)
+-- EFEITOS DE HOVER (APENAS COR)
+local function AddHoverEffect(button, isClose)
     local originalColor = button.BackgroundColor3
-    local originalSize = button.Size
-
-    button.MouseButton1Down:Connect(function()
-        button:TweenSize(UDim2.new(originalSize.X.Scale, originalSize.X.Offset - 5, originalSize.Y.Scale, originalSize.Y.Offset - 5), "Out", "Quad", 0.1, true)
-    end)
-    
-    button.MouseButton1Up:Connect(function()
-        button:TweenSize(originalSize, "Out", "Quad", 0.1, true)
-    end)
-    
     button.MouseEnter:Connect(function()
         if not Toggles[button.Name] then
             TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
         end
     end)
-    
     button.MouseLeave:Connect(function()
         if not Toggles[button.Name] then
             TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
@@ -40,7 +29,7 @@ local function AddMenuButtonEffects(button, isClose)
     end)
 end
 
--- BOTÃO ABRIR (SEM AFUNDAR - APENAS HOVER E ARRASTE)
+-- BOTÃO ABRIR
 local OpenBtn = Instance.new("TextButton")
 OpenBtn.Parent = ScreenGui
 OpenBtn.Size = UDim2.new(0, 120, 0, 45)
@@ -96,7 +85,7 @@ TitleGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(1, RedSupreme)
 })
 
--- STATUS
+-- STATUS NO RODAPÉ
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Parent = MainFrame
 StatusLabel.Size = UDim2.new(1, 0, 0, 30)
@@ -142,7 +131,7 @@ local function AnimateMenu(show)
     end
 end
 
--- Detecção de clique no botão abrir
+-- Clique no botão abrir (com filtro de arraste)
 local dragPos = nil
 OpenBtn.MouseButton1Down:Connect(function() dragPos = OpenBtn.AbsolutePosition end)
 OpenBtn.MouseButton1Up:Connect(function()
@@ -165,18 +154,19 @@ local function CreateBtn(text, argValue, isClose)
     btn.TextColor3 = TextColor
     btn.Font = Enum.Font.SourceSansBold
     btn.TextSize = 18
-    btn.AutoButtonColor = false
+    btn.AutoButtonColor = true -- Reativado o padrão do Roblox já que não há animação de afundar
     
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = btn
 
-    AddMenuButtonEffects(btn, isClose)
+    AddHoverEffect(btn, isClose)
 
     btn.MouseButton1Click:Connect(function()
         if isClose then
             AnimateMenu(false)
         else
+            -- Lógica de Toggle apenas para funções
             Toggles[text] = not Toggles[text]
             if Toggles[text] then
                 TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(200, 0, 0)}):Play()
