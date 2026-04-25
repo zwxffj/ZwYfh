@@ -1,6 +1,7 @@
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
+local UserInputService = game:GetService("UserInputService")
 
 if CoreGui:FindFirstChild("SupremeStore") then CoreGui.SupremeStore:Destroy() end
 
@@ -8,7 +9,7 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "SupremeStore"
 ScreenGui.Parent = CoreGui
 
-local MainColor = Color3.fromRGB(15, 15, 15)
+local MainColor = Color3.fromRGB(10, 10, 10)
 local AccentColor = Color3.fromRGB(35, 35, 35)
 local TextColor = Color3.fromRGB(255, 255, 255)
 
@@ -18,7 +19,7 @@ ClickSound.SoundId = "rbxassetid://12222216"
 ClickSound.Volume = 1
 ClickSound.Parent = SoundService
 
--- 🟢 BOTÃO FLUTUANTE
+-- 🟢 BOTÃO FLUTUANTE (DRAG + CLICK REAL)
 local OpenBtn = Instance.new("TextButton")
 OpenBtn.Parent = ScreenGui
 OpenBtn.Size = UDim2.new(0, 120, 0, 40)
@@ -29,8 +30,52 @@ OpenBtn.TextColor3 = TextColor
 OpenBtn.Font = Enum.Font.SourceSansBold
 OpenBtn.Visible = false
 OpenBtn.Active = true
-OpenBtn.Draggable = true
+
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 8)
+
+-- DRAG SYSTEM (sem abrir ao arrastar)
+local dragging = false
+local dragStart, startPos
+local moved = false
+
+OpenBtn.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		moved = false
+		dragStart = input.Position
+		startPos = OpenBtn.Position
+	end
+end)
+
+OpenBtn.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - dragStart
+		
+		if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
+			moved = true
+		end
+		
+		OpenBtn.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+OpenBtn.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+		
+		if not moved then
+			ClickSound:Play()
+			OpenBtn.Visible = false
+			MainFrame.Visible = true
+			AnimateMenu(true)
+		end
+	end
+end)
 
 -- 🔳 FRAME
 local MainFrame = Instance.new("Frame")
@@ -40,6 +85,7 @@ MainFrame.Position = UDim2.new(0.5, -200, 0.5, -180)
 MainFrame.Size = UDim2.new(0, 400, 0, 360)
 MainFrame.Active = true
 MainFrame.Draggable = true
+
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
 -- 🔴 GLOW
@@ -47,9 +93,9 @@ local RedGlow = Instance.new("Frame")
 RedGlow.Parent = MainFrame
 RedGlow.Size = UDim2.new(1, 0, 1, 0)
 RedGlow.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-RedGlow.BackgroundTransparency = 0.9
+RedGlow.BackgroundTransparency = 0.92
 
--- 🔥 BORDA NEON REAL (ANIMADA)
+-- 🔥 BORDA NEON
 local Stroke = Instance.new("UIStroke")
 Stroke.Parent = MainFrame
 Stroke.Thickness = 2
@@ -61,55 +107,37 @@ task.spawn(function()
 	end
 end)
 
--- 🖼️ LOGO (COM FALLBACK)
-local Logo = Instance.new("ImageLabel")
-Logo.Parent = MainFrame
-Logo.Size = UDim2.new(0, 180, 0, 100)
-Logo.Position = UDim2.new(0.5, -90, 0, 5)
-Logo.BackgroundTransparency = 1
-
--- tenta sua imagem
-Logo.Image = "rbxassetid://101664983542573"
-
--- fallback automático se não carregar
-task.delay(3, function()
-	if Logo.IsLoaded == false then
-		Logo.Image = "rbxassetid://7072719338"
-	end
-end)
-
--- animação logo
-local LogoScale = Instance.new("UIScale", Logo)
-task.spawn(function()
-	while task.wait(0.02) do
-		LogoScale.Scale = 1 + (math.sin(tick()*2)*0.03)
-	end
-end)
-
--- 🏷️ TÍTULO
+-- 🏷️ TÍTULO (DESTAQUE)
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
-Title.Size = UDim2.new(1, 0, 0, 50)
-Title.Position = UDim2.new(0, 0, 0, 100)
+Title.Size = UDim2.new(1, 0, 0, 80)
+Title.Position = UDim2.new(0, 0, 0, 20)
 Title.Text = "SUPREME STORE"
 Title.TextColor3 = Color3.new(1,1,1)
 Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 28
+Title.TextSize = 32
 Title.BackgroundTransparency = 1
+
+-- efeito leve no título
+task.spawn(function()
+	while task.wait(0.03) do
+		Title.TextSize = 32 + (math.sin(tick()*3)*2)
+	end
+end)
 
 -- 📦 BOTÕES
 local ButtonHolder = Instance.new("Frame")
 ButtonHolder.Parent = MainFrame
 ButtonHolder.BackgroundTransparency = 1
-ButtonHolder.Position = UDim2.new(0, 0, 0, 150)
-ButtonHolder.Size = UDim2.new(1, 0, 1, -160)
+ButtonHolder.Position = UDim2.new(0, 0, 0, 110)
+ButtonHolder.Size = UDim2.new(1, 0, 1, -120)
 
 local Layout = Instance.new("UIListLayout", ButtonHolder)
 Layout.Padding = UDim.new(0, 10)
 Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
 -- animação menu
-local function AnimateMenu(show)
+function AnimateMenu(show)
 	if show then
 		MainFrame.Visible = true
 		MainFrame.Size = UDim2.new(0,0,0,0)
@@ -165,11 +193,5 @@ CreateBtn("Lucky Ability", 4)
 CreateBtn("Lucky Estilo", 1)
 CreateBtn("YEN", 2)
 CreateBtn("FECHAR MENU", nil, true)
-
-OpenBtn.MouseButton1Click:Connect(function()
-	ClickSound:Play()
-	OpenBtn.Visible = false
-	AnimateMenu(true)
-end)
 
 AnimateMenu(true)
