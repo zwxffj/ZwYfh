@@ -7,11 +7,12 @@ ScreenGui.Name = "SupremeStore"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Cores Ajustadas para Contraste Máximo
-local MainColor = Color3.fromRGB(0, 0, 0) -- Preto Total para destacar o nome
+-- Configurações de Cores Neon e Fundo
+local MainColor = Color3.fromRGB(0, 0, 0) -- Preto Absoluto
 local AccentColor = Color3.fromRGB(20, 20, 20)
 local TextColor = Color3.fromRGB(255, 255, 255)
-local RedSupreme = Color3.fromRGB(255, 0, 0)
+local NeonRed = Color3.fromRGB(255, 0, 0)   -- Vermelho Forte
+local NeonBlue = Color3.fromRGB(0, 150, 255) -- Azul Neon Forte
 
 local Toggles = {}
 
@@ -47,11 +48,11 @@ OpenCorner.CornerRadius = UDim.new(0, 10)
 OpenCorner.Parent = OpenBtn
 
 local OpenStroke = Instance.new("UIStroke")
-OpenStroke.Color = RedSupreme
+OpenStroke.Color = NeonRed
 OpenStroke.Thickness = 2
 OpenStroke.Parent = OpenBtn
 
--- FRAME PRINCIPAL (PRETO FORTE)
+-- FRAME PRINCIPAL
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
@@ -66,7 +67,7 @@ local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 15)
 MainCorner.Parent = MainFrame
 
--- TÍTULO (PRETO E BRANCO - VELOCIDADE AUMENTADA)
+-- TÍTULO (AZUL E VERMELHO NEON)
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 80)
@@ -79,10 +80,11 @@ Title.BackgroundTransparency = 1
 
 local TitleGradient = Instance.new("UIGradient")
 TitleGradient.Parent = Title
+-- Gradiente configurado para alternar entre as duas cores fortes
 TitleGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.new(0, 0, 0)),     -- Preto
-    ColorSequenceKeypoint.new(0.5, Color3.new(1, 1, 1)),   -- Branco
-    ColorSequenceKeypoint.new(1, Color3.new(0, 0, 0))      -- Preto
+    ColorSequenceKeypoint.new(0, NeonRed),
+    ColorSequenceKeypoint.new(0.5, NeonBlue),
+    ColorSequenceKeypoint.new(1, NeonRed)
 })
 
 -- STATUS
@@ -96,19 +98,21 @@ StatusLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
 StatusLabel.Font = Enum.Font.SourceSansSemibold
 StatusLabel.TextSize = 14
 
--- ANIMAÇÃO SUAVE E RÁPIDA
+-- ANIMAÇÃO RÁPIDA E SUAVE
 task.spawn(function()
     local offset = -1
     while task.wait(0.01) do
-        -- Velocidade ajustada para ser rápida mas suave
+        -- Velocidade de alternância
         offset = offset + 0.025 
         if offset > 1 then offset = -1 end
         TitleGradient.Offset = Vector2.new(offset, 0)
         
+        -- Pulsação do tamanho
         Title.TextSize = 45 + (math.sin(tick() * 4) * 2)
         
+        -- Cor do ponto de Status (Verde Neon)
         local pulse = math.abs(math.sin(tick() * 3))
-        StatusLabel.TextColor3 = Color3.fromRGB(80 + (pulse * 40), 80 + (pulse * 175), 80 + (pulse * 40))
+        StatusLabel.TextColor3 = Color3.fromRGB(80 + (pulse * 20), 100 + (pulse * 155), 80 + (pulse * 20))
     end
 end)
 
@@ -153,7 +157,7 @@ local function CreateBtn(text, argValue, isClose)
     btn.Parent = ButtonHolder
     btn.Size = UDim2.new(0, 350, 0, 45)
     btn.Text = text
-    btn.BackgroundColor3 = isClose and Color3.fromRGB(150, 0, 0) or AccentColor
+    btn.BackgroundColor3 = isClose and NeonRed or AccentColor
     btn.TextColor3 = TextColor
     btn.Font = Enum.Font.SourceSansBold
     btn.TextSize = 18
@@ -171,7 +175,7 @@ local function CreateBtn(text, argValue, isClose)
         else
             Toggles[text] = not Toggles[text]
             if Toggles[text] then
-                TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = RedSupreme}):Play()
+                TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = NeonRed}):Play()
                 task.spawn(function()
                     while Toggles[text] do
                         pcall(function()
