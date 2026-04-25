@@ -8,11 +8,11 @@ ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
 -- Configurações de Cores Neon e Fundo
-local MainColor = Color3.fromRGB(0, 0, 0) -- Preto Absoluto
+local MainColor = Color3.fromRGB(0, 0, 0)
 local AccentColor = Color3.fromRGB(20, 20, 20)
 local TextColor = Color3.fromRGB(255, 255, 255)
-local NeonRed = Color3.fromRGB(255, 0, 0)   -- Vermelho Forte
-local NeonBlue = Color3.fromRGB(0, 150, 255) -- Azul Neon Forte
+local NeonRed = Color3.fromRGB(255, 0, 0)
+local NeonBlue = Color3.fromRGB(0, 150, 255)
 
 local Toggles = {}
 
@@ -67,7 +67,41 @@ local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 15)
 MainCorner.Parent = MainFrame
 
--- TÍTULO (AZUL E VERMELHO NEON)
+-- 🔥 LOGO NO TOPO
+local Logo = Instance.new("ImageLabel")
+Logo.Name = "Logo"
+Logo.Parent = MainFrame
+Logo.Size = UDim2.new(0, 260, 0, 130)
+Logo.Position = UDim2.new(0.5, -130, 0, -80)
+Logo.BackgroundTransparency = 1
+Logo.Image = "rbxassetid://132519679760432"
+Logo.ZIndex = 5
+
+-- ANIMAÇÃO LOGO (LEVITAÇÃO)
+task.spawn(function()
+    while true do
+        TweenService:Create(Logo, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0.5, -130, 0, -90)
+        }):Play()
+        task.wait(1.2)
+
+        TweenService:Create(Logo, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0.5, -130, 0, -80)
+        }):Play()
+        task.wait(1.2)
+    end
+end)
+
+-- PULSO DA LOGO
+task.spawn(function()
+    while true do
+        local scale = 260 + math.sin(tick()*3)*8
+        Logo.Size = UDim2.new(0, scale, 0, 130 + math.sin(tick()*3)*4)
+        task.wait(0.03)
+    end
+end)
+
+-- TÍTULO
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 80)
@@ -80,7 +114,6 @@ Title.BackgroundTransparency = 1
 
 local TitleGradient = Instance.new("UIGradient")
 TitleGradient.Parent = Title
--- Gradiente configurado para alternar entre as duas cores fortes
 TitleGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0, NeonRed),
     ColorSequenceKeypoint.new(0.5, NeonBlue),
@@ -98,19 +131,16 @@ StatusLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
 StatusLabel.Font = Enum.Font.SourceSansSemibold
 StatusLabel.TextSize = 14
 
--- ANIMAÇÃO RÁPIDA E SUAVE
+-- ANIMAÇÕES GERAIS
 task.spawn(function()
     local offset = -1
     while task.wait(0.01) do
-        -- Velocidade de alternância
         offset = offset + 0.025 
         if offset > 1 then offset = -1 end
         TitleGradient.Offset = Vector2.new(offset, 0)
-        
-        -- Pulsação do tamanho
+
         Title.TextSize = 45 + (math.sin(tick() * 4) * 2)
-        
-        -- Cor do ponto de Status (Verde Neon)
+
         local pulse = math.abs(math.sin(tick() * 3))
         StatusLabel.TextColor3 = Color3.fromRGB(80 + (pulse * 20), 100 + (pulse * 155), 80 + (pulse * 20))
     end
