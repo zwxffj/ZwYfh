@@ -7,12 +7,12 @@ ScreenGui.Name = "SupremeStore"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- CORES
-local MainColor = Color3.fromRGB(0, 0, 0)
+-- Configurações de Cores Neon e Fundo
+local MainColor = Color3.fromRGB(0, 0, 0) -- Preto Absoluto
 local AccentColor = Color3.fromRGB(20, 20, 20)
 local TextColor = Color3.fromRGB(255, 255, 255)
-local NeonRed = Color3.fromRGB(255, 0, 0)
-local NeonBlue = Color3.fromRGB(0, 150, 255)
+local NeonRed = Color3.fromRGB(255, 0, 0)   -- Vermelho Forte
+local NeonBlue = Color3.fromRGB(0, 150, 255) -- Azul Neon Forte
 
 local Toggles = {}
 
@@ -52,12 +52,12 @@ OpenStroke.Color = NeonRed
 OpenStroke.Thickness = 2
 OpenStroke.Parent = OpenBtn
 
--- FRAME PRINCIPAL (MENOR)
+-- FRAME PRINCIPAL
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = MainColor
-MainFrame.Position = UDim2.new(0.5, -180, 0.5, -150) 
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -175) 
 MainFrame.Size = UDim2.new(0, 0, 0, 0)
 MainFrame.Visible = false
 MainFrame.Active = true
@@ -67,27 +67,20 @@ local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 15)
 MainCorner.Parent = MainFrame
 
--- 🖼️ LOGO DENTRO DO MENU
-local Logo = Instance.new("ImageLabel")
-Logo.Parent = MainFrame
-Logo.Size = UDim2.new(0, 200, 0, 90)
-Logo.Position = UDim2.new(0.5, -100, 0, 10)
-Logo.BackgroundTransparency = 1
-Logo.Image = "rbxassetid://132519679760432"
-
--- TÍTULO (AJUSTADO)
+-- TÍTULO (AZUL E VERMELHO NEON)
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
-Title.Size = UDim2.new(1, 0, 0, 60)
-Title.Position = UDim2.new(0, 0, 0, 100)
+Title.Size = UDim2.new(1, 0, 0, 80)
+Title.Position = UDim2.new(0, 0, 0, 20)
 Title.Text = "SUPREME STORE"
 Title.TextColor3 = TextColor
 Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 35
+Title.TextSize = 45
 Title.BackgroundTransparency = 1
 
 local TitleGradient = Instance.new("UIGradient")
 TitleGradient.Parent = Title
+-- Gradiente configurado para alternar entre as duas cores fortes
 TitleGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0, NeonRed),
     ColorSequenceKeypoint.new(0.5, NeonBlue),
@@ -105,16 +98,19 @@ StatusLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
 StatusLabel.Font = Enum.Font.SourceSansSemibold
 StatusLabel.TextSize = 14
 
--- ANIMAÇÕES GERAIS
+-- ANIMAÇÃO RÁPIDA E SUAVE
 task.spawn(function()
     local offset = -1
     while task.wait(0.01) do
+        -- Velocidade de alternância
         offset = offset + 0.025 
         if offset > 1 then offset = -1 end
         TitleGradient.Offset = Vector2.new(offset, 0)
-
-        Title.TextSize = 35 + (math.sin(tick() * 4) * 1.5)
-
+        
+        -- Pulsação do tamanho
+        Title.TextSize = 45 + (math.sin(tick() * 4) * 2)
+        
+        -- Cor do ponto de Status (Verde Neon)
         local pulse = math.abs(math.sin(tick() * 3))
         StatusLabel.TextColor3 = Color3.fromRGB(80 + (pulse * 20), 100 + (pulse * 155), 80 + (pulse * 20))
     end
@@ -123,19 +119,18 @@ end)
 local ButtonHolder = Instance.new("Frame")
 ButtonHolder.Parent = MainFrame
 ButtonHolder.BackgroundTransparency = 1
-ButtonHolder.Position = UDim2.new(0, 0, 0, 160)
-ButtonHolder.Size = UDim2.new(1, 0, 1, -180)
+ButtonHolder.Position = UDim2.new(0, 0, 0, 110)
+ButtonHolder.Size = UDim2.new(1, 0, 1, -150)
 
 local Layout = Instance.new("UIListLayout")
 Layout.Parent = ButtonHolder
-Layout.Padding = UDim.new(0, 10)
+Layout.Padding = UDim.new(0, 12)
 Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- ANIMAÇÃO MENU MENOR
 local function AnimateMenu(show)
     if show then
         MainFrame.Visible = true
-        MainFrame:TweenSize(UDim2.new(0, 360, 0, 300), "Out", "Back", 0.4, true)
+        MainFrame:TweenSize(UDim2.new(0, 420, 0, 350), "Out", "Back", 0.4, true)
     else
         MainFrame:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Quart", 0.4, true, function()
             MainFrame.Visible = false
@@ -160,12 +155,13 @@ local function CreateBtn(text, argValue, isClose)
     local btn = Instance.new("TextButton")
     btn.Name = text
     btn.Parent = ButtonHolder
-    btn.Size = UDim2.new(0, 300, 0, 40)
+    btn.Size = UDim2.new(0, 350, 0, 45)
     btn.Text = text
     btn.BackgroundColor3 = isClose and NeonRed or AccentColor
     btn.TextColor3 = TextColor
     btn.Font = Enum.Font.SourceSansBold
-    btn.TextSize = 16
+    btn.TextSize = 18
+    btn.AutoButtonColor = true 
     
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 8)
@@ -183,10 +179,7 @@ local function CreateBtn(text, argValue, isClose)
                 task.spawn(function()
                     while Toggles[text] do
                         pcall(function()
-                            game:GetService("ReplicatedStorage").Packages._Index
-                            :FindFirstChild("sleitnick_knit@1.7.0")
-                            .knit.Services.SeasonService.RF
-                            .RequestRankedReward:InvokeServer(argValue)
+                            game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.7.0").knit.Services.SeasonService.RF.RequestRankedReward:InvokeServer(argValue)
                         end)
                         task.wait(0.5)
                     end
