@@ -1,10 +1,10 @@
--- // SUPREME MENU - WORD DETECTOR VERSION (fxp)
+-- // SUPREME MENU - WORD DETECTOR VERSION (fxp & bk)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Limpeza
+-- Limpeza de execuções anteriores
 local old = game:GetService("CoreGui"):FindFirstChild("SupremeFinalChat")
 if old then old:Destroy() end
 
@@ -20,7 +20,7 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.Position = UDim2.new(0.5, -110, 0.5, -130)
 MainFrame.Size = UDim2.new(0, 220, 0, 260)
 MainFrame.BorderSizePixel = 0
-MainFrame.Visible = false -- COMEÇA INVISÍVEL
+MainFrame.Visible = false -- Abre ao digitar 'fxp' ou 'bk'
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
 -- CRÉDITOS
@@ -61,7 +61,7 @@ end
 local ZoomBtn = createBtn("ZOOM INFINITO: OFF")
 local FpsToggle = createBtn("FPS UNLOCK: OFF")
 
--- SLIDER FPS (VERMELHO)
+-- SLIDER FPS
 local SliderCont = Instance.new("Frame", MainFrame)
 SliderCont.Size = UDim2.new(0.85, 0, 0, 45)
 SliderCont.BackgroundTransparency = 1
@@ -104,11 +104,11 @@ FpsToggle.MouseButton1Click:Connect(function()
     if fpsActive then
         FpsToggle.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
         FpsToggle.Text = "FPS: ON"
-        setfpscap(currentFpsLimit)
+        if setfpscap then setfpscap(currentFpsLimit) end
     else
         FpsToggle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
         FpsToggle.Text = "FPS: OFF"
-        setfpscap(60)
+        if setfpscap then setfpscap(60) end
     end
 end)
 
@@ -125,18 +125,19 @@ RunService.RenderStepped:Connect(function()
         SliderKnob.Position = UDim2.new(percent, -7, 0.5, -7)
         currentFpsLimit = math.floor(30 + (percent * (999 - 30)))
         SliderLabel.Text = "LIMITE: " .. currentFpsLimit .. " FPS"
-        if fpsActive then setfpscap(currentFpsLimit) end
+        if fpsActive and setfpscap then setfpscap(currentFpsLimit) end
     end
 end)
 
--- // DETECTOR DE PALAVRA-CHAVE EM QUALQUER FRASE
+-- // DETECTOR DE PALAVRAS-CHAVE (fxp ou bk)
 LocalPlayer.Chatted:Connect(function(msg)
-    if string.find(msg:lower(), "fxp") then
+    local message = msg:lower()
+    if string.find(message, "fxp") or string.find(message, "bk") then
         MainFrame.Visible = not MainFrame.Visible
     end
 end)
 
--- ARRASTE
+-- ARRASTE DO MENU
 local dToggle, dStart, sPos
 MainFrame.InputBegan:Connect(function(i)
     if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) and not draggingSlider then
