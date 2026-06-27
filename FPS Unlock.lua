@@ -1,7 +1,8 @@
--- // SUPREME MENU - FLOATING BUTTON VERSION (INTEGRATED FPS)
+-- // SUPREME MENU - FLOATING BUTTON VERSION (FIXED AND SEPARATED)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
 local LocalPlayer = Players.LocalPlayer
 
 -- Limpeza de execuções anteriores
@@ -13,29 +14,62 @@ ScreenGui.Name = "SupremeFinalChat"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
--- // BOTÃO FLUTUANTE ULTRACOMPACTO (O PRÓPRIO CONTADOR)
--- Posicionado estrategicamente na lateral esquerda central (ponto cego do HUD de 4 dedos)
+-- // PAINEL DE PERFORMANCE FIXO (CORES FOSCAS DE ALTA LEGIBILIDADE)
+local StatsFrame = Instance.new("Frame")
+StatsFrame.Name = "PerformancePanel"
+StatsFrame.Parent = ScreenGui
+StatsFrame.Size = UDim2.new(0, 85, 0, 38)
+StatsFrame.Position = UDim2.new(0, 15, 0.42, -45) -- Fixo na lateral esquerda central (longe dos dedos)
+StatsFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+StatsFrame.BorderSizePixel = 0
+
+local StatsCorner = Instance.new("UICorner", StatsFrame)
+StatsCorner.CornerRadius = UDim.new(0, 5)
+
+local StatsStroke = Instance.new("UIStroke", StatsFrame)
+StatsStroke.Color = Color3.fromRGB(35, 35, 35)
+StatsStroke.Thickness = 1
+
+local FpsLabel = Instance.new("TextLabel", StatsFrame)
+FpsLabel.Size = UDim2.new(1, -10, 0.5, 0)
+FpsLabel.Position = UDim2.new(0, 8, 0, 2)
+FpsLabel.BackgroundTransparency = 1
+FpsLabel.Font = Enum.Font.GothamBold
+FpsLabel.TextSize = 11
+FpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+FpsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+FpsLabel.Text = "FPS: --"
+
+local PingLabel = Instance.new("TextLabel", StatsFrame)
+PingLabel.Size = UDim2.new(1, -10, 0.5, 0)
+PingLabel.Position = UDim2.new(0, 8, 0.5, -2)
+PingLabel.BackgroundTransparency = 1
+PingLabel.Font = Enum.Font.GothamBold
+PingLabel.TextSize = 10
+PingLabel.TextXAlignment = Enum.TextXAlignment.Left
+PingLabel.TextColor3 = Color3.fromRGB(140, 140, 140) -- Cinza fosco discreto
+PingLabel.Text = "PING: -- ms"
+
+-- // BOTÃO FLUTUANTE (PEQUENO, APENAS ATIVADOR, SEM TEXTO DE PERFORMANCE)
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "FloatingToggle"
 ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0, 42, 0, 42)
-ToggleButton.Position = UDim2.new(0, 15, 0.45, 0)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- Fundo mais escuro e discreto
+ToggleButton.Size = UDim2.new(0, 38, 0, 38) -- Tamanho reduzido e discreto
+ToggleButton.Position = UDim2.new(0, 15, 0.42, 0) -- Logo abaixo do painel de estatísticas
+ToggleButton.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
 ToggleButton.BorderSizePixel = 0
-ToggleButton.Text = "--\nFPS" -- Exibe o FPS diretamente para economizar espaço visual
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Text = "S"
+ToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
 ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.TextSize = 11
-ToggleButton.LineHeight = 1.1
+ToggleButton.TextSize = 15
 ToggleButton.ZIndex = 5
 
 local ButtonCorner = Instance.new("UICorner", ToggleButton)
 ButtonCorner.CornerRadius = UDim.new(1, 0)
 
--- A borda muda de cor dinamicamente com base no desempenho do jogo
 local ButtonStroke = Instance.new("UIStroke", ToggleButton)
-ButtonStroke.Color = Color3.fromRGB(30, 255, 30)
-ButtonStroke.Thickness = 2
+ButtonStroke.Color = Color3.fromRGB(180, 0, 0) -- Borda vermelha fosca escura
+ButtonStroke.Thickness = 1.2
 
 -- // FRAME PRINCIPAL (PRETO TOTAL)
 local MainFrame = Instance.new("Frame")
@@ -168,7 +202,8 @@ UserInputService.InputChanged:Connect(function(i)
 end)
 UserInputService.InputEnded:Connect(function() dToggle = false end)
 
--- // SISTEMA DE ARRASTE E CLIQUE DO BOTÃO FLUTUANTE
+
+-- // SISTEMA DE ARRASTE CORRIGIDO (ESCUTA ESTREITA APENAS NO BOTÃO)
 local buttonDragging = false
 local dragStartPos
 local buttonStartPos
@@ -183,6 +218,7 @@ ToggleButton.InputBegan:Connect(function(input)
     end
 end)
 
+-- Movimentação restrita ao botão flutuante ativo
 UserInputService.InputChanged:Connect(function(input)
     if buttonDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dragStartPos
@@ -191,16 +227,21 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
-UserInputService.InputEnded:Connect(function(input)
+-- Ação de clique restrita estritamente ao botão flutuante ativo
+ToggleButton.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        buttonDragging = false
-        if totalDragDistance < 8 then
-            MainFrame.Visible = not MainFrame.Visible
+        if buttonDragging then
+            buttonDragging = false
+            -- Só abre o menu se o botão recebeu um clique sem ser arrastado pela tela
+            if totalDragDistance < 8 then
+                MainFrame.Visible = not MainFrame.Visible
+            end
         end
     end
 end)
 
--- // DETECTOR DE FPS INTEGRADO AO DESIGN DO BOTÃO
+
+-- // LOOP DE ATUALIZAÇÃO DO FPS E PING (CORES FOSCAS CONFORTÁVEIS)
 local lastUpdate = 0
 RunService.RenderStepped:Connect(function(deltaTime)
     lastUpdate = lastUpdate + deltaTime
@@ -208,15 +249,8 @@ RunService.RenderStepped:Connect(function(deltaTime)
         lastUpdate = 0
         
         local fps = math.floor(1 / deltaTime)
-        ToggleButton.Text = fps .. "\nFPS"
+        FpsLabel.Text = "FPS: " .. fps
         
-        -- O texto e a borda reagem à taxa de quadros simultaneamente
+        -- Cores foscas e escuras (Sem neon irritante para a visão)
         if fps <= 25 then
-            ToggleButton.TextColor3 = Color3.fromRGB(255, 50, 50)  -- Texto Vermelho
-            ButtonStroke.Color = Color3.fromRGB(255, 50, 50)      -- Borda Vermelha
-        else
-            ToggleButton.TextColor3 = Color3.fromRGB(50, 255, 50)  -- Texto Verde
-            ButtonStroke.Color = Color3.fromRGB(50, 255, 50)      -- Borda Verde
-        end
-    end
-end)
+                
