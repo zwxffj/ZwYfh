@@ -1,4 +1,4 @@
--- // SUPREME MENU - WORD DETECTOR VERSION (fxp & bk)
+-- // SUPREME MENU - FLOATING BUTTON VERSION (INTEGRATED FPS)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -13,6 +13,30 @@ ScreenGui.Name = "SupremeFinalChat"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
+-- // BOTÃO FLUTUANTE ULTRACOMPACTO (O PRÓPRIO CONTADOR)
+-- Posicionado estrategicamente na lateral esquerda central (ponto cego do HUD de 4 dedos)
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "FloatingToggle"
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 42, 0, 42)
+ToggleButton.Position = UDim2.new(0, 15, 0.45, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- Fundo mais escuro e discreto
+ToggleButton.BorderSizePixel = 0
+ToggleButton.Text = "--\nFPS" -- Exibe o FPS diretamente para economizar espaço visual
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 11
+ToggleButton.LineHeight = 1.1
+ToggleButton.ZIndex = 5
+
+local ButtonCorner = Instance.new("UICorner", ToggleButton)
+ButtonCorner.CornerRadius = UDim.new(1, 0)
+
+-- A borda muda de cor dinamicamente com base no desempenho do jogo
+local ButtonStroke = Instance.new("UIStroke", ToggleButton)
+ButtonStroke.Color = Color3.fromRGB(30, 255, 30)
+ButtonStroke.Thickness = 2
+
 -- // FRAME PRINCIPAL (PRETO TOTAL)
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
@@ -20,7 +44,7 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.Position = UDim2.new(0.5, -110, 0.5, -130)
 MainFrame.Size = UDim2.new(0, 220, 0, 260)
 MainFrame.BorderSizePixel = 0
-MainFrame.Visible = false -- Abre ao digitar 'fxp' ou 'bk'
+MainFrame.Visible = false
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
 -- CRÉDITOS
@@ -129,15 +153,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- // DETECTOR DE PALAVRAS-CHAVE (fxp ou bk)
-LocalPlayer.Chatted:Connect(function(msg)
-    local message = msg:lower()
-    if string.find(message, "fxp") or string.find(message, "bk") then
-        MainFrame.Visible = not MainFrame.Visible
-    end
-end)
-
--- ARRASTE DO MENU
+-- ARRASTE DO MENU PRINCIPAL
 local dToggle, dStart, sPos
 MainFrame.InputBegan:Connect(function(i)
     if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) and not draggingSlider then
@@ -151,3 +167,56 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 UserInputService.InputEnded:Connect(function() dToggle = false end)
+
+-- // SISTEMA DE ARRASTE E CLIQUE DO BOTÃO FLUTUANTE
+local buttonDragging = false
+local dragStartPos
+local buttonStartPos
+local totalDragDistance = 0
+
+ToggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        buttonDragging = true
+        dragStartPos = input.Position
+        buttonStartPos = ToggleButton.Position
+        totalDragDistance = 0
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if buttonDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStartPos
+        totalDragDistance = totalDragDistance + delta.Magnitude
+        ToggleButton.Position = UDim2.new(buttonStartPos.X.Scale, buttonStartPos.X.Offset + delta.X, buttonStartPos.Y.Scale, buttonStartPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        buttonDragging = false
+        if totalDragDistance < 8 then
+            MainFrame.Visible = not MainFrame.Visible
+        end
+    end
+end)
+
+-- // DETECTOR DE FPS INTEGRADO AO DESIGN DO BOTÃO
+local lastUpdate = 0
+RunService.RenderStepped:Connect(function(deltaTime)
+    lastUpdate = lastUpdate + deltaTime
+    if lastUpdate >= 0.3 then
+        lastUpdate = 0
+        
+        local fps = math.floor(1 / deltaTime)
+        ToggleButton.Text = fps .. "\nFPS"
+        
+        -- O texto e a borda reagem à taxa de quadros simultaneamente
+        if fps <= 25 then
+            ToggleButton.TextColor3 = Color3.fromRGB(255, 50, 50)  -- Texto Vermelho
+            ButtonStroke.Color = Color3.fromRGB(255, 50, 50)      -- Borda Vermelha
+        else
+            ToggleButton.TextColor3 = Color3.fromRGB(50, 255, 50)  -- Texto Verde
+            ButtonStroke.Color = Color3.fromRGB(50, 255, 50)      -- Borda Verde
+        end
+    end
+end)
