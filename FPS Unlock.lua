@@ -1,8 +1,7 @@
--- // SUPREME MENU - FLOATING BUTTON VERSION (FIXED AND SEPARATED)
+-- // SUPREME MENU - FLOATING BUTTON ONLY
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local Stats = game:GetService("Stats")
 local LocalPlayer = Players.LocalPlayer
 
 -- Limpeza de execuções anteriores
@@ -14,62 +13,26 @@ ScreenGui.Name = "SupremeFinalChat"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
--- // PAINEL DE PERFORMANCE FIXO (CORES FOSCAS DE ALTA LEGIBILIDADE)
-local StatsFrame = Instance.new("Frame")
-StatsFrame.Name = "PerformancePanel"
-StatsFrame.Parent = ScreenGui
-StatsFrame.Size = UDim2.new(0, 85, 0, 38)
-StatsFrame.Position = UDim2.new(0, 15, 0.42, -45) -- Fixo na lateral esquerda central (longe dos dedos)
-StatsFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-StatsFrame.BorderSizePixel = 0
-
-local StatsCorner = Instance.new("UICorner", StatsFrame)
-StatsCorner.CornerRadius = UDim.new(0, 5)
-
-local StatsStroke = Instance.new("UIStroke", StatsFrame)
-StatsStroke.Color = Color3.fromRGB(35, 35, 35)
-StatsStroke.Thickness = 1
-
-local FpsLabel = Instance.new("TextLabel", StatsFrame)
-FpsLabel.Size = UDim2.new(1, -10, 0.5, 0)
-FpsLabel.Position = UDim2.new(0, 8, 0, 2)
-FpsLabel.BackgroundTransparency = 1
-FpsLabel.Font = Enum.Font.GothamBold
-FpsLabel.TextSize = 11
-FpsLabel.TextXAlignment = Enum.TextXAlignment.Left
-FpsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-FpsLabel.Text = "FPS: --"
-
-local PingLabel = Instance.new("TextLabel", StatsFrame)
-PingLabel.Size = UDim2.new(1, -10, 0.5, 0)
-PingLabel.Position = UDim2.new(0, 8, 0.5, -2)
-PingLabel.BackgroundTransparency = 1
-PingLabel.Font = Enum.Font.GothamBold
-PingLabel.TextSize = 10
-PingLabel.TextXAlignment = Enum.TextXAlignment.Left
-PingLabel.TextColor3 = Color3.fromRGB(140, 140, 140) -- Cinza fosco discreto
-PingLabel.Text = "PING: -- ms"
-
--- // BOTÃO FLUTUANTE (PEQUENO, APENAS ATIVADOR, SEM TEXTO DE PERFORMANCE)
+-- // BOTÃO FLUTUANTE PEQUENO
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "FloatingToggle"
 ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0, 38, 0, 38) -- Tamanho reduzido e discreto
-ToggleButton.Position = UDim2.new(0, 15, 0.42, 0) -- Logo abaixo do painel de estatísticas
-ToggleButton.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+ToggleButton.Size = UDim2.new(0, 40, 0, 40)
+ToggleButton.Position = UDim2.new(0, 15, 0.45, 0) -- Posição segura para garras de 4 dedos
+ToggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 ToggleButton.BorderSizePixel = 0
 ToggleButton.Text = "S"
-ToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.TextSize = 15
+ToggleButton.TextSize = 16
 ToggleButton.ZIndex = 5
 
 local ButtonCorner = Instance.new("UICorner", ToggleButton)
 ButtonCorner.CornerRadius = UDim.new(1, 0)
 
 local ButtonStroke = Instance.new("UIStroke", ToggleButton)
-ButtonStroke.Color = Color3.fromRGB(180, 0, 0) -- Borda vermelha fosca escura
-ButtonStroke.Thickness = 1.2
+ButtonStroke.Color = Color3.fromRGB(255, 0, 0)
+ButtonStroke.Thickness = 1.5
 
 -- // FRAME PRINCIPAL (PRETO TOTAL)
 local MainFrame = Instance.new("Frame")
@@ -203,54 +166,43 @@ end)
 UserInputService.InputEnded:Connect(function() dToggle = false end)
 
 
--- // SISTEMA DE ARRASTE CORRIGIDO (ESCUTA ESTREITA APENAS NO BOTÃO)
-local buttonDragging = false
-local dragStartPos
-local buttonStartPos
-local totalDragDistance = 0
+-- // NOVO SISTEMA ISOLADO PARA O BOTÃO FLUTUANTE
+local isDraggingButton = false
+local buttonInputStart, buttonPosStart
+local dragDistance = 0
 
-ToggleButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        buttonDragging = true
-        dragStartPos = input.Position
-        buttonStartPos = ToggleButton.Position
-        totalDragDistance = 0
-    end
+-- Inicia o arraste APENAS se o toque começar estritamente dentro do botão
+ToggleButton.MouseButton1Down:Connect(function()
+    isDraggingButton = true
+    dragDistance = 0
+    buttonPosStart = ToggleButton.Position
+    
+    local mouseLocation = UserInputService:GetMouseLocation()
+    buttonInputStart = Vector3.new(mouseLocation.X, mouseLocation.Y, 0)
 end)
 
--- Movimentação restrita ao botão flutuante ativo
+-- Move o botão baseado no movimento global enquanto estiver arrastando
 UserInputService.InputChanged:Connect(function(input)
-    if buttonDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStartPos
-        totalDragDistance = totalDragDistance + delta.Magnitude
-        ToggleButton.Position = UDim2.new(buttonStartPos.X.Scale, buttonStartPos.X.Offset + delta.X, buttonStartPos.Y.Scale, buttonStartPos.Y.Offset + delta.Y)
+    if isDraggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local mouseLocation = UserInputService:GetMouseLocation()
+        local currentInputPos = Vector3.new(mouseLocation.X, mouseLocation.Y, 0)
+        local delta = currentInputPos - buttonInputStart
+        
+        dragDistance = delta.Magnitude
+        ToggleButton.Position = UDim2.new(buttonPosStart.X.Scale, buttonPosStart.X.Offset + delta.X, buttonPosStart.Y.Scale, buttonPosStart.Y.Offset + delta.Y)
     end
 end)
 
--- Ação de clique restrita estritamente ao botão flutuante ativo
-ToggleButton.InputEnded:Connect(function(input)
+-- Finaliza o estado de arraste
+UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        if buttonDragging then
-            buttonDragging = false
-            -- Só abre o menu se o botão recebeu um clique sem ser arrastado pela tela
-            if totalDragDistance < 8 then
-                MainFrame.Visible = not MainFrame.Visible
-            end
-        end
+        isDraggingButton = false
     end
 end)
 
-
--- // LOOP DE ATUALIZAÇÃO DO FPS E PING (CORES FOSCAS CONFORTÁVEIS)
-local lastUpdate = 0
-RunService.RenderStepped:Connect(function(deltaTime)
-    lastUpdate = lastUpdate + deltaTime
-    if lastUpdate >= 0.3 then
-        lastUpdate = 0
-        
-        local fps = math.floor(1 / deltaTime)
-        FpsLabel.Text = "FPS: " .. fps
-        
-        -- Cores foscas e escuras (Sem neon irritante para a visão)
-        if fps <= 25 then
-                
+-- Evento de clique nativo: Só dispara se o toque começou E terminou no botão, sem arrastar
+ToggleButton.Activated:Connect(function()
+    if dragDistance < 10 then
+        MainFrame.Visible = not MainFrame.Visible
+    end
+end)
